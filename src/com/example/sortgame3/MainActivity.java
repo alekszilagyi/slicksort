@@ -6,6 +6,7 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.opengl.GLSurfaceView;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.GestureDetectorCompat;
 import android.view.GestureDetector.SimpleOnGestureListener;
@@ -34,9 +35,6 @@ public class MainActivity extends Activity {
 	public static final int gameWidth = 600;
 	
 	private static CoordinateTranslator coordTrans;
-	
-
-	ThreadProcess thread;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -136,34 +134,6 @@ public class MainActivity extends Activity {
 
 			}
 			return false;
-		}
-	}
-
-	private class ThreadProcess extends Thread {
-		volatile boolean stopRequested = false;
-
-		volatile boolean running = true;
-
-		public void stopThread() {
-			stopRequested = true;
-			while (running) {
-				thread.interrupt();
-				Thread.yield();
-			}
-		}
-
-		@Override
-		public void run() {
-			while (!stopRequested) {
-				synchronized (Thread.currentThread()) {
-				
-					boolean continueGame = game.update();
-					
-				}
-			}
-
-			// run game update
-			running = false;
 		}
 	}
 }

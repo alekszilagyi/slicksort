@@ -8,36 +8,33 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 
 public class Game 
-{
-	private Activity context;
-	
+{	
 	private int gameWidth, gameHeight;
 	
 	private GameClock timer;
 	
-	public int leftColor, rightColor;
-	
 	private long nextSpawnTime;
-	private static long STD_SPAWN_TIME = 6000;
-	private static long SWIPE_DELAY = 100;
-	private long tapTime;
+	private long nextAddColorTime;
+	private long nextSwitchColorTime;
 	
-	private boolean tapReady;
-	private boolean swipeReady;
-	private Block storedBlock;
-	private int swipeDirection;
+	private static long STD_SWITCH_COLOR_TIME = 6000;
+	private static long STD_ADD_COLOR_TIME = 10000; 
+	private static long STD_SPAWN_TIME = 2000;
+	private static int numStartColors = 2;
 	
-	private int score = 0;
+	private int leftEdgeColorIndex;
+	private int rightEdgeColorIndex;
+	
+	public int score = 0;
 	
 	private static ArrayList<Block> blocks;
-	int[] gameColors;
+	ArrayList<Integer> activeColors;
+	ArrayList<Integer> gameColors;
 	
 	public Game(int gameWidth, int gameHeight, Activity	 context)
 	{
 		this.gameWidth = gameWidth;
 		this.gameHeight = gameHeight;
-		
-		this.context = context;
 		
 		reset();
 	}
@@ -45,6 +42,16 @@ public class Game
 	public static ArrayList<Block> getBlocks()
 	{
 		return new ArrayList<Block>(blocks);
+	}
+	
+	public int getLeftEdgeColor()
+	{
+		return activeColors.get(leftEdgeColorIndex);
+	}
+	
+	public int getRightEdgeColor()
+	{
+		return activeColors.get(rightEdgeColorIndex);
 	}
 	
 	public void signalTap(int xLoc, int yLoc)
@@ -71,8 +78,8 @@ public class Game
 	
 	public void spawnBlock()
 	{
-		int startColor = (int)(Math.random() * gameColors.length);
-		Block newBlock = new Block(gameWidth, gameHeight, gameColors, startColor);
+		int startColor = (int)(Math.random() * activeColors.size());
+		Block newBlock = new Block(gameWidth, gameHeight, activeColors, startColor);
 		blocks.add(newBlock);
 	}
 	
@@ -81,15 +88,38 @@ public class Game
 		timer.tick();
 		
 		nextSpawnTime -= timer.getDeltaInMillis();
+		nextSwitchColorTime -= timer.getDeltaInMillis();
+		nextAddColorTime -= timer.getDeltaInMillis();
 		
 		if (nextSpawnTime <= 0)
 		{
 			spawnBlock();
-			float lower = 1.15f;
-			float upper = .85f;
-			double spawn = ((Math.random() * (upper - lower)) + lower);
 			
-			nextSpawnTime = (long)(STD_SPAWN_TIME * spawn);
+			nextSpawnTime = getModifiedRand(STD_SPAWN_TIME, .85, 1.15);
+		}
+		
+		if (nextSwitchColorTime <= 0)
+		{
+			leftEdgeColorIndex = (int)(Math.random() * activeColors.size());
+			rightEdgeColorIndex = leftEdgeColorIndex;
+			while (rightEdgeColorIndex == leftEdgeColorIndex)
+			{
+				rightEdgeColorIndex = (int)(Math.random() * activeColors.size());
+			}
+			
+			nextSwitchColorTime = getModifiedRand(STD_SWITCH_COLOR_TIME, .9, 1.2);
+		}
+		
+		if (nextAddColorTime <= 0)
+		{
+			int nextColorIndex = activeColors.size();
+			
+			if (nextColorIndex < gameColors.size())
+			{
+				activeColors.add(gameColors.get(nextColorIndex));
+			}
+			
+			nextAddColorTime = getModifiedRand(STD_ADD_COLOR_TIME, .9, 1.1);
 		}
 		
 		ArrayList<Block> deadBlocks = new ArrayList<Block>();
@@ -97,47 +127,27 @@ public class Game
 		for (Block block: blocks)
 		{
 			block.update(timer.getDeltaInSeconds());
-			if (block.gameOver())
+			if (block.hitBottom())
 			{
-				context.runOnUiThread(new Runnable() {
-					
-					@Override
-					public void run() {
-						AlertDialog.Builder alert = new AlertDialog.Builder(context);
-						
-						StringBuilder message = new StringBuilder();
-						message.append("GAME OVER\n");
-						message.append("Score: " + score + "\n");
-						message.append("Play Again?\n");
-						
-						alert.setMessage(message.toString());
-						
-						alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-							
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								reset();
-								
-							}
-						});
-						
-						alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
-							
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								System.exit(0);	
-							}
-						});
-						
-						alert.show();
-						
-					}
-				});
-				
 				return false;
 			}
 			if (block.shouldDie())
 			{
+				if (block.getSwipeDirection() < 0)
+				{
+					if (block.getColor() != activeColors.get(leftEdgeColorIndex))
+					{
+						return false;
+					}
+				}
+				else
+				{
+					if (block.getColor() != activeColors.get(rightEdgeColorIndex))
+					{
+						return false;
+					}
+				}
+				
 				deadBlocks.add(block);
 			}
 		}
@@ -151,22 +161,38 @@ public class Game
 		return true;
 	}
 	
+	public long getModifiedRand(long standard, double low, double high)
+	{
+		double lower = low;
+		double upper = high;
+		double spawn = ((Math.random() * (upper - lower)) + lower);
+		
+		return (long)(standard * spawn);
+	}
+	
 	public void reset()
 	{
 		this.timer = new GameClock();
 		this.blocks = new ArrayList<Block>();
 		
-		int[] colors = {Color.RED, Color.BLUE};
-		this.gameColors = colors;
+		this.gameColors = new ArrayList<Integer>();
+		this.gameColors.add(Color.RED);
+		this.gameColors.add(Color.BLUE);
+		this.gameColors.add(Color.GREEN);
+		this.gameColors.add(Color.YELLOW);
 		
-		this.leftColor = Color.RED;
-		this.rightColor = Color.BLUE;
+		this.activeColors = new ArrayList<Integer>();
+		for (int i = 0; i < numStartColors; i++)
+		{
+			this.activeColors.add(this.gameColors.get(i));
+		}
 		
-		this.tapReady = false;
-		this.swipeReady = false;
-		this.tapTime = Long.MAX_VALUE;
+		this.leftEdgeColorIndex = 0;
+		this.rightEdgeColorIndex = 1;
 		
 		this.nextSpawnTime = 0;
+		this.nextAddColorTime = STD_ADD_COLOR_TIME;
+		this.nextSwitchColorTime = STD_SWITCH_COLOR_TIME;
 		this.score = 0;
 	}
 	

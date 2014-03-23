@@ -1,10 +1,7 @@
 package com.example.sortgame3;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.graphics.Point;
-import android.graphics.PointF;
+import android.content.Context;
 import android.opengl.GLSurfaceView;
 
 public class Vizualization extends GLSurfaceView {
@@ -20,7 +17,7 @@ public class Vizualization extends GLSurfaceView {
 		setPreserveEGLContextOnPause(true);
 				
 		renderer = new MyRenderer();
-		renderer.setGame(game);
+		renderer.setRefs(context, game);
 		
 		setRenderer(renderer);
 				

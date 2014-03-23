@@ -1,5 +1,7 @@
 package com.example.sortgame3;
 
+import java.util.ArrayList;
+
 import android.graphics.Rect;
 
 
@@ -12,20 +14,20 @@ public class Block {
 	private Rect bounds;
 	private static Rect gameBounds;
 	
-	private int[] colors;
+	private ArrayList<Integer> colors;
 	private int colorIndex;
 	
-	private static int VERT_MOVE_CONST = 200;
-	private static int HORIZ_MOVE_CONST = 1000;
+	private static int VERT_MOVE_CONST = 250;
+	private static int HORIZ_MOVE_CONST = 3000;
 	
 	private Square mySquare;
 	private boolean squareSet;
 	
 	private boolean swiped;
-	private boolean gameOver;
+	private boolean hitBottom;
 	private int swipeDirection; //negative left, positive right
 	
-	public Block(int gameWidth, int gameHeight, int[] colors, int startColor)
+	public Block(int gameWidth, int gameHeight, ArrayList<Integer> colors, int startColor)
 	{
 		
 		blockWidthHalf = gameWidth / 5 / 2;
@@ -36,13 +38,14 @@ public class Block {
 		bounds = new Rect(xCenter - blockWidthHalf, yCenter + blockWidthHalf, xCenter + blockWidthHalf, yCenter - blockWidthHalf);
 		gameBounds = new Rect(0, gameHeight, gameWidth, 0);
 		this.colors = colors;
-		if (startColor >= colors.length)
+		if (startColor >= colors.size())
 		{
 			startColor = 0;
 		}
 		this.colorIndex = startColor;
 		
 		this.swiped = false;
+		this.hitBottom = false;
 		
 		squareSet = false;
 	}
@@ -94,17 +97,17 @@ public class Block {
 		if (swiped == false)
 		{
 			colorIndex++;
-			if (colorIndex >= colors.length)
+			if (colorIndex >= colors.size())
 			{
 				colorIndex = 0;
 			}
-			mySquare.setColor(colors[colorIndex]);
+			mySquare.setColor(colors.get(colorIndex));
 		}
 	}
 	
 	public int getColor()
 	{
-		return colors[colorIndex];
+		return colors.get(colorIndex);
 	}
 	
 	public Square getSquare()
@@ -130,6 +133,11 @@ public class Block {
 		}
 	}
 	
+	public int getSwipeDirection()
+	{
+		return swipeDirection;
+	}
+	
 	public boolean shouldDie()
 	{		
 		bounds = new Rect(xCenter - blockWidthHalf, yCenter + blockWidthHalf, xCenter + blockWidthHalf, yCenter - blockWidthHalf);
@@ -147,9 +155,9 @@ public class Block {
 		
 	}
 	
-	public boolean gameOver()
+	public boolean hitBottom()
 	{
-		return gameOver;
+		return hitBottom;
 	}
 	
 	public void update(double delta)
@@ -160,7 +168,7 @@ public class Block {
 			
 			if (yCenter < 0)
 			{
-				gameOver = true;
+				hitBottom = true;
 			}
 		}
 		else
