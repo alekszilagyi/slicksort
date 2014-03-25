@@ -30,9 +30,9 @@ public class DrawView {
 		canvas.drawRect(0, 0, width, height, paint);
 		
 		//draw sides
-		paint.setColor(game.getLeftEdgeColor());
+		//paint.setColor(game.getLeftEdgeColor());
 		canvas.drawRect(0, 0, 10, height, paint);
-		paint.setColor(game.getRightEdgeColor());
+		//paint.setColor(game.getRightEdgeColor());
 		canvas.drawRect(width - 10, 0, width, height, paint);		
 	
 		ArrayList<Block> activeBlocks = game.getBlocks();

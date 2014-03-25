@@ -16,14 +16,20 @@ public class Game
 	private long nextSpawnTime;
 	private long nextAddColorTime;
 	private long nextSwitchColorTime;
+	private long colorChangeInterval;
 	
 	private static long STD_SWITCH_COLOR_TIME = 6000;
 	private static long STD_ADD_COLOR_TIME = 10000; 
-	private static long STD_SPAWN_TIME = 2000;
+	private static long STD_SPAWN_TIME = 1500;
 	private static int numStartColors = 2;
 	
-	private int leftEdgeColorIndex;
-	private int rightEdgeColorIndex;
+	private int[] leftEdgeColors;
+	private int leftEdgeNextColorIndex;
+	private int[] rightEdgeColors;
+	private int rightEdgeNextColorIndex;
+	
+	private boolean colorChanging;
+	private int colorChangeIndex;
 	
 	public int score = 0;
 	
@@ -44,14 +50,14 @@ public class Game
 		return new ArrayList<Block>(blocks);
 	}
 	
-	public int getLeftEdgeColor()
+	public int[] getLeftEdgeColor()
 	{
-		return activeColors.get(leftEdgeColorIndex);
+		return leftEdgeColors;
 	}
 	
-	public int getRightEdgeColor()
+	public int[] getRightEdgeColor()
 	{
-		return activeColors.get(rightEdgeColorIndex);
+		return rightEdgeColors;
 	}
 	
 	public void signalTap(int xLoc, int yLoc)
@@ -98,16 +104,51 @@ public class Game
 			nextSpawnTime = getModifiedRand(STD_SPAWN_TIME, .85, 1.15);
 		}
 		
-		if (nextSwitchColorTime <= 0)
+		if (nextSwitchColorTime <= 0 && colorChanging == false)
 		{
-			leftEdgeColorIndex = (int)(Math.random() * activeColors.size());
-			rightEdgeColorIndex = leftEdgeColorIndex;
-			while (rightEdgeColorIndex == leftEdgeColorIndex)
+			leftEdgeNextColorIndex = leftEdgeColors[3];
+			while (leftEdgeNextColorIndex == leftEdgeColors[3])
 			{
-				rightEdgeColorIndex = (int)(Math.random() * activeColors.size());
+				leftEdgeNextColorIndex = (int)(Math.random() * activeColors.size());
+			}
+			rightEdgeNextColorIndex = leftEdgeNextColorIndex;
+			while (rightEdgeNextColorIndex == leftEdgeNextColorIndex)
+			{
+				rightEdgeNextColorIndex = (int)(Math.random() * activeColors.size());
 			}
 			
-			nextSwitchColorTime = getModifiedRand(STD_SWITCH_COLOR_TIME, .9, 1.2);
+			colorChanging = true;
+			colorChangeInterval = 250;
+			colorChangeIndex = 0;
+			
+			leftEdgeColors[colorChangeIndex] = gameColors.get(leftEdgeNextColorIndex);
+			rightEdgeColors[colorChangeIndex] = gameColors.get(rightEdgeNextColorIndex);
+			//nextSwitchColorTime = getModifiedRand(STD_SWITCH_COLOR_TIME, .9, 1.2);
+		}
+		
+		if (colorChanging)
+		{
+			colorChangeInterval -= timer.getDeltaInMillis();
+			
+			if (colorChangeInterval < 0)
+			{
+				leftEdgeColors[colorChangeIndex] = gameColors.get(leftEdgeNextColorIndex);
+				rightEdgeColors[colorChangeIndex] = gameColors.get(rightEdgeNextColorIndex);
+				
+				colorChangeIndex++;
+				
+				if (colorChangeIndex >= leftEdgeColors.length)
+				{
+					colorChanging = false;
+					nextSwitchColorTime = getModifiedRand(STD_SWITCH_COLOR_TIME, .9, 1.2);
+				}
+				
+				else
+				{
+					colorChangeInterval = 250;
+				}
+			}
+						
 		}
 		
 		if (nextAddColorTime <= 0)
@@ -135,14 +176,14 @@ public class Game
 			{
 				if (block.getSwipeDirection() < 0)
 				{
-					if (block.getColor() != activeColors.get(leftEdgeColorIndex))
+					if (block.getColor() != leftEdgeColors[3])
 					{
 						return false;
 					}
 				}
 				else
 				{
-					if (block.getColor() != activeColors.get(rightEdgeColorIndex))
+					if (block.getColor() != rightEdgeColors[3])
 					{
 						return false;
 					}
@@ -187,8 +228,14 @@ public class Game
 			this.activeColors.add(this.gameColors.get(i));
 		}
 		
-		this.leftEdgeColorIndex = 0;
-		this.rightEdgeColorIndex = 1;
+		this.leftEdgeColors = new int[4];
+		this.rightEdgeColors = new int[4];
+		
+		for (int i = 0; i < rightEdgeColors.length; i++)
+		{
+			leftEdgeColors[i] = Color.RED;
+			rightEdgeColors[i] = Color.BLUE;
+		}
 		
 		this.nextSpawnTime = 0;
 		this.nextAddColorTime = STD_ADD_COLOR_TIME;

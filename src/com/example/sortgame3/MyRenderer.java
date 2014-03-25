@@ -32,8 +32,8 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 	private int height, width;
 	private ArrayList<Block> blocks;
 	
-	private TallRectangle leftEdge;
-	private TallRectangle rightEdge;
+	private ArrayList<TallRectangle> leftEdges;
+	private ArrayList<TallRectangle> rightEdges;
 
 	private Game game;
 	private Activity context;
@@ -44,8 +44,14 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 
 		GLES20.glClearColor(128.0f, 128.0f, 128.0f, 1f);
 
-		leftEdge = new TallRectangle();
-		rightEdge = new TallRectangle();
+		leftEdges = new ArrayList<TallRectangle>();
+		rightEdges = new ArrayList<TallRectangle>();
+		
+		for (int i = 0; i < 4; i++)
+		{
+			leftEdges.add(new TallRectangle());
+			rightEdges.add(new TallRectangle());
+		}
 
 		blocks = new ArrayList<Block>();
 
@@ -72,32 +78,38 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 			blocks.clear();
 			blocks = Game.getBlocks();
 			PointF point;
-
-			leftEdge.setColor(game.getLeftEdgeColor());
-			point = gamePointToGLPoint(0, MainActivity.gameHeight / 2);
 			
 			
-			// create model
-			Matrix.setIdentityM(modelMatrix, 0);
-			// apply with translation
-			Matrix.translateM(modelMatrix, 0, point.x, point.y, 0f);
-			// apply projection to translation
-			Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, modelMatrix, 0);
-			// draw
-			leftEdge.draw(scratch);
+			int[] leftColors = game.getLeftEdgeColor();
+			int[] rightColors = game.getRightEdgeColor();
 			
-			rightEdge.setColor(game.getRightEdgeColor());
-			point = gamePointToGLPoint(MainActivity.gameWidth, MainActivity.gameHeight / 2);
+			for (int i = 0; i < leftColors.length; i++)
+			{	
+				leftEdges.get(i).setColor(leftColors[i]);
+				point = gamePointToGLPoint(0, MainActivity.gameHeight - (i * (MainActivity.gameHeight / 4)));
+				// create model
+				Matrix.setIdentityM(modelMatrix, 0);
+				// apply with translation
+				Matrix.translateM(modelMatrix, 0, point.x, point.y, 0f);
+				// apply projection to translation
+				Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, modelMatrix, 0);
+				// draw
+				leftEdges.get(i).draw(scratch);
+			}
 			
-			
-			// create model
-			Matrix.setIdentityM(modelMatrix, 0);
-			// apply with translation
-			Matrix.translateM(modelMatrix, 0, point.x, point.y, 0f);
-			// apply projection to translation
-			Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, modelMatrix, 0);
-			// draw
-			rightEdge.draw(scratch);
+			for (int i = 0; i < leftColors.length; i++)
+			{	
+				rightEdges.get(i).setColor(rightColors[i]);
+				point = gamePointToGLPoint(MainActivity.gameWidth, MainActivity.gameHeight - (i * (MainActivity.gameHeight / 4)));
+				// create model
+				Matrix.setIdentityM(modelMatrix, 0);
+				// apply with translation
+				Matrix.translateM(modelMatrix, 0, point.x, point.y, 0f);
+				// apply projection to translation
+				Matrix.multiplyMM(scratch, 0, mMVPMatrix, 0, modelMatrix, 0);
+				// draw
+				rightEdges.get(i).draw(scratch);
+			}
 
 			for (Block block : blocks) {
 				if (block.squareSet() == false) {

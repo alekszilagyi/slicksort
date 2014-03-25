@@ -52,18 +52,16 @@ public class Block {
 	
 	public boolean touched(int xLoc, int yLoc)
 	{		
-		bounds = new Rect(xCenter - blockWidthHalf, yCenter + blockWidthHalf, xCenter + blockWidthHalf, yCenter - blockWidthHalf);
+		int distSq = ((xLoc - xCenter) * (xLoc - xCenter)) + ((yLoc - yCenter) * (yLoc - yCenter));
 		
-		if (xLoc <= bounds.left || xLoc >= bounds.right)
+		int radiusSq = (blockWidthHalf + 10) * (blockWidthHalf * 10);
+		
+		if (distSq <= radiusSq)
 		{
-			return false;
-		}
-		if (yLoc <= bounds.bottom || yLoc >= bounds.top)
-		{
-			return false;
+			return true;
 		}
 		
-		return true;	
+		return false;
 	}
 	
 	public boolean squareSet()

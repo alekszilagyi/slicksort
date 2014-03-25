@@ -44,10 +44,10 @@ public class TallRectangle {
             "}";
 
     static float squareCoords[] = {
-            -0.01f,  1f, 0.0f,   // top left
-            -0.01f, -1f, 0.0f,   // bottom left
-             0.01f, -1f, 0.0f,   // bottom right
-             0.01f,  1f, 0.0f }; // top right
+            0f,  .5f, 0.0f,   // top left
+            0f, 0f, 0.0f,   // bottom left
+             0.02f, 0f, 0.0f,   // bottom right
+             0.02f,  .5f, 0.0f }; // top right
 
     private short drawOrder[] = { 0, 1, 2, 0, 2, 3 }; // order to draw vertices
 
