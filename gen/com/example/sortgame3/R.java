@@ -37,12 +37,13 @@ public final class R {
         public static final int addcolor=0x7f040000;
         public static final int awesome=0x7f040001;
         public static final int begin=0x7f040002;
-        public static final int cephalopod=0x7f040003;
-        public static final int faster=0x7f040004;
-        public static final int gameover=0x7f040005;
-        public static final int slicksort=0x7f040006;
-        public static final int start=0x7f040007;
-        public static final int switchcolor=0x7f040008;
+        public static final int brotacular=0x7f040003;
+        public static final int cephalopod=0x7f040004;
+        public static final int faster=0x7f040005;
+        public static final int gameover=0x7f040006;
+        public static final int slicksort=0x7f040007;
+        public static final int start=0x7f040008;
+        public static final int switchcolor=0x7f040009;
     }
     public static final class string {
         public static final int action_settings=0x7f060001;

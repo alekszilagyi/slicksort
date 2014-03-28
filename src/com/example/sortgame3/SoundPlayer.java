@@ -16,8 +16,9 @@ public class SoundPlayer {
 	public static final int gameover = R.raw.gameover;
 	public static final int faster = R.raw.faster;
 	public static final int music = R.raw.cephalopod;
+	public static final int bro = R.raw.brotacular;
 	
-	public static final int numSounds = 7; // the number of sounds above
+	public static final int numSounds = 8; // the number of sounds above
 	
 	private static SoundPool soundPool;
 	private static HashMap<Integer, Integer> soundPoolMap;
@@ -36,6 +37,7 @@ public class SoundPlayer {
 		soundPoolMap.put(gameover, soundPool.load(context, gameover, 1));
 		soundPoolMap.put(faster, soundPool.load(context, faster, 1));
 		soundPoolMap.put(music, soundPool.load(context, music, 1));
+		soundPoolMap.put(bro, soundPool.load(context, bro, 1));
 	}
 
 	public static void playSound(int soundID)

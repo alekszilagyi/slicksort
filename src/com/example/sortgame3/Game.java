@@ -220,8 +220,13 @@ public class Game {
 			blocks.remove(block);
 			score++;
 
-			if (score % 20 == 0) {
+			if (score == 20) {
 				SoundPlayer.playSound(SoundPlayer.awesome);
+			}
+			
+			if (score == 40)
+			{
+				SoundPlayer.playSound(SoundPlayer.bro);
 			}
 
 		}
