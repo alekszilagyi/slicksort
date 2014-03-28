@@ -17,7 +17,7 @@ public class Block {
 	private ArrayList<Integer> colors;
 	private int colorIndex;
 	
-	private static int VERT_MOVE_CONST = 250;
+	public static int VERT_MOVE_CONST = 250;
 	private static int HORIZ_MOVE_CONST = 3000;
 	
 	private Square mySquare;
@@ -34,6 +34,15 @@ public class Block {
 		
 		yCenter = gameHeight - blockWidthHalf;
 		xCenter = (int)((gameWidth - blockWidthHalf) * Math.random());
+		
+		if (xCenter < gameWidth / 4)
+		{
+			xCenter = gameWidth / 4;
+		}
+		if (xCenter > (3 * gameWidth) / 4)
+		{
+			xCenter = (3 * gameWidth) / 4;
+		}
 		
 		bounds = new Rect(xCenter - blockWidthHalf, yCenter + blockWidthHalf, xCenter + blockWidthHalf, yCenter - blockWidthHalf);
 		gameBounds = new Rect(0, gameHeight, gameWidth, 0);
@@ -120,12 +129,10 @@ public class Block {
 			swiped = !swiped;
 			if (direction < 0)
 			{
-				System.out.println("Swipe Left");
 				swipeDirection = -1;
 			}
 			else
 			{
-				System.out.println("Swipe Right");
 				swipeDirection = 1;
 			}
 		}

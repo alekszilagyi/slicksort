@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import com.example.sortgame3.Game.GameStatus;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -31,7 +33,7 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 
 	private int height, width;
 	private ArrayList<Block> blocks;
-	
+
 	private ArrayList<TallRectangle> leftEdges;
 	private ArrayList<TallRectangle> rightEdges;
 
@@ -46,9 +48,8 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 
 		leftEdges = new ArrayList<TallRectangle>();
 		rightEdges = new ArrayList<TallRectangle>();
-		
-		for (int i = 0; i < 4; i++)
-		{
+
+		for (int i = 0; i < 4; i++) {
 			leftEdges.add(new TallRectangle());
 			rightEdges.add(new TallRectangle());
 		}
@@ -60,12 +61,12 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 	public void onDrawFrame(GL10 unused) {
 
 		// update game
-		boolean gameContinue = game.update();
+		Game.GameStatus gameContinue = game.update();
 
-		if (gameContinue) {
+		if (gameContinue == GameStatus.PLAY) {
 
 			// Redraw background color
-			float[] scratch = new float[16];			
+			float[] scratch = new float[16];
 
 			GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT
 					| GLES20.GL_DEPTH_BUFFER_BIT);
@@ -74,19 +75,18 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 			Matrix.setLookAtM(viewMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f,
 					0.0f);
 			Matrix.multiplyMM(mMVPMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
-			
+
 			blocks.clear();
 			blocks = Game.getBlocks();
 			PointF point;
-			
-			
+
 			int[] leftColors = game.getLeftEdgeColor();
 			int[] rightColors = game.getRightEdgeColor();
-			
-			for (int i = 0; i < leftColors.length; i++)
-			{	
+
+			for (int i = 0; i < leftColors.length; i++) {
 				leftEdges.get(i).setColor(leftColors[i]);
-				point = gamePointToGLPoint(0, MainActivity.gameHeight - (i * (MainActivity.gameHeight / 4)));
+				point = gamePointToGLPoint(0, MainActivity.gameHeight
+						- (i * (MainActivity.gameHeight / 4)));
 				// create model
 				Matrix.setIdentityM(modelMatrix, 0);
 				// apply with translation
@@ -96,11 +96,12 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 				// draw
 				leftEdges.get(i).draw(scratch);
 			}
-			
-			for (int i = 0; i < leftColors.length; i++)
-			{	
+
+			for (int i = 0; i < leftColors.length; i++) {
 				rightEdges.get(i).setColor(rightColors[i]);
-				point = gamePointToGLPoint(MainActivity.gameWidth, MainActivity.gameHeight - (i * (MainActivity.gameHeight / 4)));
+				point = gamePointToGLPoint(MainActivity.gameWidth,
+						MainActivity.gameHeight
+								- (i * (MainActivity.gameHeight / 4)));
 				// create model
 				Matrix.setIdentityM(modelMatrix, 0);
 				// apply with translation
@@ -129,10 +130,10 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 				block.getSquare().draw(scratch);
 			}
 		}
-		
-		else if (gameContinue == false && alertShown == false)
-		{
+
+		else if (gameContinue == GameStatus.GAMEOVER && alertShown == false) {
 			alertShown = true;
+			game.pause();
 			showAlert();
 		}
 	}
@@ -189,12 +190,12 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 	}
 
 	public void showAlert() {
-		
 
 		context.runOnUiThread(new Runnable() {
-			
+
 			@Override
 			public void run() {
+				SoundPlayer.playSound(SoundPlayer.gameover);
 				AlertDialog.Builder alert = new AlertDialog.Builder(context);
 
 				StringBuilder message = new StringBuilder();
@@ -204,27 +205,32 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 
 				alert.setMessage(message.toString());
 
-				alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+				alert.setPositiveButton("Yes",
+						new DialogInterface.OnClickListener() {
 
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						game.reset();
-						alertShown = false;
-					}
-				});
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								game.reset();
+								game.pause();
+								alertShown = false;
+							}
+						});
 
-				alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+				alert.setNegativeButton("No",
+						new DialogInterface.OnClickListener() {
 
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						alertShown = false;
-						System.exit(0);
-					}
-				});
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								alertShown = false;
+								System.exit(0);
+							}
+						});
 
 				alert.show();
-				
+
 			}
-		});		
+		});
 	}
 }
